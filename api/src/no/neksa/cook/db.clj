@@ -18,11 +18,3 @@
   :start (start-crux!)
   :stop (.close crux-node))
 
-(comment
-  (crux/submit-tx crux-node [[:crux.tx/put
-                              {:crux.db/id "hi2u"
-                               :user/name  "zag"}]])
-
-  (crux/q (crux/db crux-node) '{:find  [(pull e [*])]
-                                :where [[e :user/name name]]}))
-
