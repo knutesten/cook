@@ -2,6 +2,7 @@
  :deps    {org.clojure/clojure                       {:mvn/version "1.10.3"}
            org.clojure/tools.logging                 {:mvn/version "1.1.0"}
            org.apache.logging.log4j/log4j-slf4j-impl {:mvn/version "2.14.1"}
+           nrepl/nrepl                               {:mvn/version "0.8.3"}
            mount/mount                               {:mvn/version "0.1.16"}
            ring/ring-core                            {:mvn/version "1.9.4"}
            ring/ring-jetty-adapter                   {:mvn/version "1.9.4"}
