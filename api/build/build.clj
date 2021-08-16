@@ -2,10 +2,10 @@
   (:require [clojure.tools.build.api :as b]))
 
 (def lib 'no.neksa/cook)
-(def version (format "1.2.%s" (b/git-count-revs nil)))
+(def version (format "%s" (b/git-count-revs nil)))
 (def class-dir "target/classes")
 (def basis (b/create-basis {:project "deps.edn"}))
-(def uber-file (format "target/%s-%s-standalone.jar" (name lib) version))
+(def uber-file (format "target/%s-standalone.jar" (name lib)))
 
 (defn clean [_]
   (b/delete {:path "target"}))
