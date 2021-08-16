@@ -12,16 +12,24 @@
       response
       (content-type "application/edn")))
 
-(defn- create-recipe [req]
-  (let [recipe (:edn-params req)]
-    (if (su/valid-closed? :recipe/recipe-new recipe)
-      (-> recipe
-          db/create-recipe
-          deref
-          edn-response)
-      (bad-request "Invalid recipe"))))
+(defn- create-recipe [{recipe :edn-params}]
+  (if (su/valid-closed? :recipe/recipe-new recipe)
+    (-> recipe
+        db/create-recipe
+        deref
+        edn-response)
+    (bad-request "Invalid recipe")))
+
+(defn- edit-recipe [{recipe :edn-params}]
+  (if (su/valid-closed? :recipe/recipe recipe)
+    (-> recipe
+        db/edit-recipe
+        deref
+        edn-response)
+    (bad-request "Invalid recipe")))
 
 (defroutes app
+  (PUT "/recipe" [] edit-recipe)
   (POST "/recipe" [] create-recipe)
   (route/not-found "404 Not found"))
 

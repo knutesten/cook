@@ -21,3 +21,11 @@
       (crux/await-tx crux-node tx)
       (get-recipe-by-id id))))
 
+(defn edit-recipe
+  [recipe]
+  {:pre [(s/valid? :recipe/recipe recipe)]}
+  (let [tx (crux/submit-tx crux-node [[:crux.tx/put recipe]])]
+    (future
+      (crux/await-tx crux-node tx)
+      (get-recipe-by-id (:crux.db/id recipe)))))
+
