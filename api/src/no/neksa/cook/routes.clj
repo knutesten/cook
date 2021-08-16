@@ -28,7 +28,19 @@
         edn-response)
     (bad-request "Invalid recipe")))
 
+(defn- get-recipe [{{id :id} :route-params}]
+  (-> id
+      db/get-recipe-by-id
+      edn-response))
+
+(defn- get-recipes [{:keys [query-params]}]
+  (if-let [query (get query-params "search")]
+    (db/search-recipes-by-name query)
+    (db/get-recipes)))
+
 (defroutes app
+  (GET "/recipe/:id" [id] get-recipe)
+  (GET "/recipe" [] get-recipes)
   (PUT "/recipe" [] edit-recipe)
   (POST "/recipe" [] create-recipe)
   (route/not-found "404 Not found"))

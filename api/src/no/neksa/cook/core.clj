@@ -17,8 +17,7 @@
 (defstate server
   :start (run-jetty (-> app
                         (wrap-edn-params)
-                        ;;(wrap-defaults site-defaults)
-                        )
+                        (wrap-defaults site-defaults))
                     {:port  3030
                      :join? false})
   :stop (.stop server))

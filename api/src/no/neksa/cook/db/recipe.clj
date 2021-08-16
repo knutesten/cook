@@ -1,5 +1,6 @@
 (ns no.neksa.cook.db.recipe
   (:require
+   [clojure.string :as str]
    [clojure.spec.alpha :as s]
    [crux.api :as crux]
    [no.neksa.cook.db :refer [crux-node]])
@@ -28,4 +29,21 @@
     (future
       (crux/await-tx crux-node tx)
       (get-recipe-by-id (:crux.db/id recipe)))))
+
+(defn get-recipes []
+  (map first
+       (crux/q
+         (crux/db crux-node)
+         '{:find  [(pull id [*])]
+           :where [[id :recipe/name]]})))
+
+(defn search-recipes-by-name [query]
+  (map first
+       (crux/q
+         (crux/db crux-node)
+         '{:find  [(pull id [*])]
+           :in    [query]
+           :where [[id :recipe/name n]
+                   [(str/includes? n query)]]}
+         query)))
 
