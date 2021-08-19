@@ -1,0 +1,14 @@
+;; shadow-cljs configuration
+{:source-paths
+ ["src"]
+
+ :dependencies
+ [[reagent "1.1.0"]
+  [metosin/reitit "0.5.15"]
+  [cljs-ajax "0.8.3"]]
+
+ :builds
+ {:frontend
+  {:target   :browser
+   :devtools {:after-load no.neksa.cook.core/mount-root}
+   :modules  {:main {:init-fn no.neksa.cook.core/init!}}}}}

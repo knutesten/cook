@@ -34,14 +34,15 @@
       edn-response))
 
 (defn- get-recipes [{:keys [query-params]}]
-  (if-let [query (get query-params "search")]
-    (db/search-recipes-by-name query)
-    (db/get-recipes)))
+  (edn-response
+    (if-let [query (get query-params "search")]
+      (db/search-recipes-by-name query)
+      (db/get-recipes))))
 
 (defroutes app
-  (GET "/recipe/:id" [id] get-recipe)
-  (GET "/recipe" [] get-recipes)
-  (PUT "/recipe" [] edit-recipe)
-  (POST "/recipe" [] create-recipe)
+  (GET "/recipes/:id" [id] get-recipe)
+  (GET "/recipes" [] get-recipes)
+  (PUT "/recipes" [] edit-recipe)
+  (POST "/recipes" [] create-recipe)
   (route/not-found "404 Not found"))
 

@@ -6,6 +6,7 @@
    [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
    [no.neksa.cook.spec]
    [no.neksa.cook.routes :refer [app]]
+   [no.neksa.cook.middleware.webapp :refer [wrap-webapp]]
    [no.neksa.cook.middleware.edn :refer [wrap-edn-params]])
   (:gen-class))
 
@@ -16,6 +17,7 @@
 
 (defstate server
   :start (run-jetty (-> app
+                        (wrap-webapp)
                         (wrap-edn-params)
                         (wrap-defaults site-defaults))
                     {:port  3030

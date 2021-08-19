@@ -3,3 +3,6 @@ target/
 .nrepl-port
 .DS_Store
 data/
+webapp/public/js
+node_modules/
+.shadow-cljs/
