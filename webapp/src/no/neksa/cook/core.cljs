@@ -2,6 +2,7 @@
   (:require
    [reagent.core :as r]
    [reagent.dom :as d]
+   [no.neksa.cook.ajax]
    [no.neksa.cook.routes :refer [start-router!]]
    [no.neksa.cook.layout :refer [layout-page]]))
 

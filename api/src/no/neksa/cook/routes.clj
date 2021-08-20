@@ -39,7 +39,11 @@
       (db/search-recipes-by-name query)
       (db/get-recipes))))
 
+(defn- csrf [req]
+  (edn-response (:anti-forgery-token req)))
+
 (defroutes app
+  (GET "/csrf" [] csrf)
   (GET "/recipes/:id" [id] get-recipe)
   (GET "/recipes" [] get-recipes)
   (PUT "/recipes" [] edit-recipe)
