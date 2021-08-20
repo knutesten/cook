@@ -8,7 +8,7 @@
               :response-format (edn-response-format)})
 
 (defn add-csrf-token-header [req]
-  (if (= "POST" (:method req))
+  (if (#{"POST" "PUT"} (:method req))
     (update req :headers assoc "x-csrf-token" @csrf-token)
     req))
 

@@ -7,7 +7,9 @@
    [no.neksa.cook.layout :refer [layout-page]]))
 
 (defn mount-root []
-  (d/render [layout-page] (.getElementById js/document "app")))
+  (let [app-elem (.getElementById js/document "app")]
+    (d/unmount-component-at-node app-elem)
+    (d/render [layout-page] app-elem)))
 
 (defn ^:export init! []
   (start-router!)

@@ -3,6 +3,7 @@
    [ring.util.response :refer [response content-type bad-request]]
    [compojure.core :refer :all]
    [compojure.route :as route]
+   [clojure.spec.alpha :as s]
    [no.neksa.cook.spec.util :as su]
    [no.neksa.cook.db.recipe :as db]))
 
@@ -18,7 +19,7 @@
         db/create-recipe
         deref
         edn-response)
-    (bad-request "Invalid recipe")))
+    (bad-request (s/explain-str :recipe/recipe recipe))))
 
 (defn- edit-recipe [{recipe :edn-params}]
   (if (su/valid-closed? :recipe/recipe recipe)
@@ -26,7 +27,7 @@
         db/edit-recipe
         deref
         edn-response)
-    (bad-request "Invalid recipe")))
+    (bad-request (s/explain-str :recipe/recipe recipe))))
 
 (defn- get-recipe [{{id :id} :route-params}]
   (-> id

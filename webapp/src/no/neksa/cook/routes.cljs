@@ -6,7 +6,7 @@
    [reitit.coercion.spec :as rss]
    [no.neksa.cook.page.home :refer [home-page]]
    [no.neksa.cook.page.shopping-list :refer [shopping-list-page]]
-   [no.neksa.cook.page.recipe :refer [recipe-page]]))
+   [no.neksa.cook.page.recipe :refer [recipe-page edit-recipe-page]]))
 
 (defonce route (r/atom nil))
 
@@ -19,7 +19,10 @@
                       :view  #'shopping-list-page}]
    ["/recipes/:id" {:name       :recipe
                     :view       #'recipe-page
-                    :parameters {:path {:id string?}}}]])
+                    :parameters {:path {:id string?}}}]
+   ["/recipes/:id/edit" {:name       :edit-recipe
+                         :view       #'edit-recipe-page
+                         :parameters {:path {:id string?}}}]])
 
 (defn start-router! []
   (rfe/start!

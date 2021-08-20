@@ -8,14 +8,15 @@
    [java.util UUID Date]))
 
 (defn get-recipe-by-id [id]
-  (let [result (crux/pull (crux/db crux-node) '[*] id)]
+  (let [id     (if (uuid? id) id (UUID/fromString id))
+        result (crux/pull (crux/db crux-node) '[*] id)]
     (when-not (empty? result)
       result)))
 
 (defn create-recipe
   [recipe]
   {:pre [(s/valid? :recipe/recipe-new recipe)]}
-  (let [id  (.toString (UUID/randomUUID))
+  (let [id  (UUID/randomUUID)
         now (Date.)
         doc (merge recipe {:crux.db/id          id
                            :recipe/updated-inst now
@@ -29,7 +30,7 @@
   [recipe]
   {:pre [(s/valid? :recipe/recipe recipe)]}
   (let [now    (Date.)
-        recipe (assoc recipe :updated-inst now)
+        recipe (assoc recipe :recipe/updated-inst now)
         tx     (crux/submit-tx crux-node [[:crux.tx/put recipe]])]
     (future
       (crux/await-tx crux-node tx)
