@@ -3,7 +3,10 @@
    [ajax.core :refer [GET PUT]]
    [ajax.edn :refer [edn-response-format edn-request-format]]
    [reitit.frontend.easy :as rfe]
-   [reagent.core :as r]))
+   [reagent.core :as r]
+   [no.neksa.cook.form-util :refer [input-int-with-label
+                                    input-text-with-label
+                                    textarea-with-label]]))
 
 (defonce recipe (r/atom nil))
 
@@ -20,21 +23,6 @@
                                :recipe
                                {:id (:crux.db/id @recipe)})}))
 
-(defn input-text-with-label [data key label]
-  [:label
-   label
-   [:br]
-   [:input {:type      "text"
-            :value     (key  @data)
-            :on-change #(swap! data assoc key (-> % .-target .-value))}]])
-
-(defn textarea-with-label [data key label]
-  [:label
-   label
-   [:br]
-   [:textarea {:on-change #(swap! data assoc key (-> % .-target .-value))
-               :value     (key  @data)}]])
-
 (defn edit-recipe-page [{{{id :id} :path} :parameters}]
   (fetch-recipe id)
   (fn []
@@ -44,6 +32,8 @@
      [:br]
      [textarea-with-label recipe :recipe/description "Beskrivelse"]
      [:br]
+     [input-int-with-label recipe :recipe/portions "Porsjoner"]
+     [:br]
      [:button {:type     "submit"
                :on-click save-recipe} "Lagre"]]))
 
@@ -52,6 +42,10 @@
   (fn []
     [:<>
      [:h1 (:recipe/name @recipe)]
+     [:blockquote (:recipe/description @recipe)]
+     [:div
+      [:h3 "Ingredienser"]
+      [:h4 "Porsjoner: " (:recipe/portions @recipe)]]
      [:a {:href (rfe/href :edit-recipe {:id id})}
       "Endre på oppskrift"]
-     [:blockquote (:recipe/description @recipe)]]))
+     ]))
