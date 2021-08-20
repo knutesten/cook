@@ -5,7 +5,7 @@
    [crux.api :as crux]
    [no.neksa.cook.db :refer [crux-node]])
   (:import
-   [java.util UUID]))
+   [java.util UUID Date]))
 
 (defn get-recipe-by-id [id]
   (let [result (crux/pull (crux/db crux-node) '[*] id)]
@@ -16,7 +16,10 @@
   [recipe]
   {:pre [(s/valid? :recipe/recipe-new recipe)]}
   (let [id  (.toString (UUID/randomUUID))
-        doc (merge recipe {:crux.db/id id})
+        now (Date.)
+        doc (merge recipe {:crux.db/id          id
+                           :recipe/updated-inst now
+                           :recipe/created-inst now})
         tx  (crux/submit-tx crux-node [[:crux.tx/put doc]])]
     (future
       (crux/await-tx crux-node tx)
@@ -25,7 +28,9 @@
 (defn edit-recipe
   [recipe]
   {:pre [(s/valid? :recipe/recipe recipe)]}
-  (let [tx (crux/submit-tx crux-node [[:crux.tx/put recipe]])]
+  (let [now    (Date.)
+        recipe (assoc recipe :updated-inst now)
+        tx     (crux/submit-tx crux-node [[:crux.tx/put recipe]])]
     (future
       (crux/await-tx crux-node tx)
       (get-recipe-by-id (:crux.db/id recipe)))))
@@ -34,8 +39,10 @@
   (map first
        (crux/q
          (crux/db crux-node)
-         '{:find  [(pull id [*])]
-           :where [[id :recipe/name]]})))
+         '{:find     [(pull id [*]) updated-inst]
+           :where    [[id :recipe/name]
+                      [id :recipe/updated-inst updated-inst]]
+           :order-by [[updated-inst :asc]]})))
 
 (defn search-recipes-by-name [query]
   (map first

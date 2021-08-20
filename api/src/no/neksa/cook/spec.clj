@@ -12,7 +12,8 @@
                                                    :ingredient/amount])
                                      #(let [{:keys [unit amount]} %]
                                         (not (and unit (not amount))))))
-
+(s/def :recipe/updated-inst inst?)
+(s/def :recipe/created-inst inst?)
 (s/def :recipe/name string?)
 (s/def :recipe/description string?)
 (s/def :recipe/portions integer?)
@@ -22,7 +23,9 @@
 (s/def :recipe/recipe-new (s/keys :req [:recipe/name]
                                   :opt [:recipe/description
                                         :recipe/portions
-                                        :recipe/ingredients]))
+                                        :recipe/ingredients
+                                        :recipe/updated-inst
+                                        :recipe/created-inst]))
 (s/def :recipe/recipe (s/merge (s/keys :req [:crux.db/id])
                                :recipe/recipe-new))
 
