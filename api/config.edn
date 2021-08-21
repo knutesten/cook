@@ -1,0 +1,4 @@
+{:crux/tx-log         "data/dev/tx-log"
+ :crux/document-store "data/dev/doc-store"
+ :crux/index-store    "data/dev/index-store"
+ :server/static-content-folder}

@@ -2,7 +2,8 @@
   (:require
    [mount.core :refer [defstate]]
    [clojure.java.io :as io]
-   [crux.api :as crux]))
+   [crux.api :as crux]
+   [no.neksa.cook.config :refer [config]]))
 
 (defn start-crux! []
   (letfn [(kv-store [dir]
@@ -10,9 +11,9 @@
                         :db-dir      (io/file dir)
                         :sync?       true}})]
     (crux/start-node
-      {:crux/tx-log         (kv-store "data/dev/tx-log")
-       :crux/document-store (kv-store "data/dev/doc-store")
-       :crux/index-store    (kv-store "data/dev/index-store")})))
+      {:crux/tx-log         (kv-store (:crux/tx-log config))
+       :crux/document-store (kv-store (:crux/document-store config))
+       :crux/index-store    (kv-store (:crux/index-store config))})))
 
 (defstate crux-node
   :start (start-crux!)
