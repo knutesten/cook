@@ -13,6 +13,10 @@
 
 (defonce recipe (r/atom nil))
 
+(defn update-recipe! [& vals]
+  (swap! recipe (fn [r]
+                  (apply (partial update r) vals))))
+
 (defn update-in-recipe! [ks & vals]
   (swap! recipe (fn [r]
                   (apply (partial update-in r ks) vals))))
@@ -36,10 +40,9 @@
 (defn input-unit [idx ing]
   [:select {:value ((fnil name "") (:ingredient/unit ing))
             :on-change
-            #(swap! recipe
-                    assoc-in
-                    [:recipe/ingredients idx :ingredient/unit]
-                    (-> % .-target .-value keyword))}
+            #(assoc-in-recipe!
+               [:recipe/ingredients idx :ingredient/unit]
+               (-> % .-target .-value keyword))}
    [:option {:value ""}]
    (for [[u t] [[:ml "ml"] [:dl "dl"] [:l "l"] [:g "g"] [:kg "kg"]
                 [:tsp "ts"] [:tbsp "ss"] [:clove "fedd"]]]
@@ -51,11 +54,7 @@
     (let [nr-str    (-> evt .-target .-value)
           nr-str-us (str/replace nr-str "," ".")
           valid?    (re-matches #"[0-9]*\.?[0-9]*" nr-str-us)
-          nr        (js/parseFloat nr-str-us)
-          update-fn #(swap! recipe
-                            assoc-in
-                            [:recipe/ingredients idx %1]
-                            %2)]
+          nr        (js/parseFloat nr-str-us)]
       (when valid?
         (if (js/isNaN nr)
           (update-in-recipe! [:recipe/ingredients idx] dissoc :ingredient/amount)
@@ -70,26 +69,63 @@
                         (:ingredient/amount__format ing)
                         (:ingredient/amount ing))}])
 
+(defn input-ingredient-name [idx ing]
+  [:input {:type      "text"
+           :value     (:ingredient/name ing)
+           :on-change #(assoc-in-recipe!
+                         [:recipe/ingredients idx :ingredient/name]
+                         (-> % .-target .-value))}])
+
+(defn vec-del [coll idx]
+  (into (subvec coll 0 idx) (subvec coll (inc idx))))
+
+(defn vec-up [coll idx]
+  (if (zero? idx)
+    coll
+    (into (subvec coll 0 (dec idx))
+          (concat
+            [(nth coll idx)]
+            [(nth coll (dec idx))]
+            (subvec coll (inc idx))))))
+
+(defn vec-down [coll idx]
+  (if (= (count coll) (inc idx))
+    coll
+    (into (subvec coll 0 idx)
+          (concat
+            [(nth coll (inc idx))]
+            [(nth coll idx)]
+            (subvec coll (+ 2 idx))))))
+
 (defn input-ingredients []
   [:<>
    [:label "Ingredienser"]
    [:ul
-    (for [[idx ing] (zipmap (range) (:recipe/ingredients @recipe))]
-      ^{:key idx}
-      [:li
-       [input-float idx ing]
-       (gstring/unescapeEntities "&nbsp;")
-       [input-unit idx ing]
-       (gstring/unescapeEntities "&nbsp;")
-       [:input {:type      "text"
-                :value     (:ingredient/name ing)
-                :on-change #(swap! recipe
-                                   assoc-in
-                                   [:recipe/ingredients idx :ingredient/name]
-                                   (-> % .-target .-value))}]])
-    [:li [:button
-          {:on-click #(swap! recipe update :recipe/ingredients (fnil conj []) {})}
-          "Legg til"]]]])
+    (let [ingredients (:recipe/ingredients @recipe)]
+      (for [[idx ing] (zipmap (range) ingredients)]
+        ^{:key idx}
+        [:li
+         [input-float idx ing]
+         (gstring/unescapeEntities "&nbsp;")
+         [input-unit idx ing]
+         (gstring/unescapeEntities "&nbsp;")
+         [input-ingredient-name idx ing]
+         (gstring/unescapeEntities "&nbsp;")
+         (gstring/unescapeEntities "&nbsp;")
+         [:button {:on-click
+                   #(update-recipe! :recipe/ingredients vec-up idx)} "↑"]
+         (gstring/unescapeEntities "&nbsp;")
+         [:button {:on-click
+                   #(update-recipe! :recipe/ingredients vec-down idx)} "↓"]
+         (gstring/unescapeEntities "&nbsp;")
+         [:button {:on-click
+                   #(update-recipe! :recipe/ingredients vec-del idx)} "-"]
+         (gstring/unescapeEntities "&nbsp;")
+         (when (= (inc idx) (count ingredients))
+           [:button
+            {:on-click #(update-recipe! :recipe/ingredients (fnil conj []) {})}
+            "+"])
+         ]))]])
 
 (defn edit-recipe-page [{{{id :id} :path} :parameters}]
   (fetch-recipe id)
@@ -119,13 +155,13 @@
      [:blockquote (:recipe/description @recipe)]
      [:div
       [:h3 "Ingredienser"]
-      [:b "Porsjoner: " (:recipe/portions @recipe)]
+      [:h6 "Porsjoner: " (:recipe/portions @recipe)]
       [:ul
-       (for [ing  (:recipe/ingredients @recipe)
-             :let [amount (:ingredient/amount ing)
-                   unit (:ingredient/unit ing)
-                   name (:ingredient/name ing)]]
-         ^{:key ing}
+       (for [[idx ing] (zipmap (range) (:recipe/ingredients @recipe))
+             :let      [amount (:ingredient/amount ing)
+                        unit (:ingredient/unit ing)
+                        name (:ingredient/name ing)]]
+         ^{:key idx}
          [:li amount " " unit " " name])]
       [:div
        [:h3 "Framgangsmåte"]
