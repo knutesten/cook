@@ -1,5 +1,6 @@
 (ns no.neksa.cook.page.home
   (:require
+   [goog.string :as gstring]
    [ajax.core :refer [GET POST]]
    [ajax.edn :refer [edn-response-format edn-request-format]]
    [reitit.frontend.easy :as rfe]
@@ -39,6 +40,7 @@
         [:input {:type      "text"
                  :value     new-recipe-name
                  :on-change #(swap! state assoc :new-recipe-name (-> % .-target .-value))}]
+        (gstring/unescapeEntities "&nbsp;")
         [:button {:type     "submit"
                   :disabled (not new-recipe-name)} "Lag ny"]]
        (recipe-list recipes)])))

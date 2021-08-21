@@ -9,7 +9,10 @@
            ring/ring-defaults                        {:mvn/version "0.3.3"}
            compojure/compojure                       {:mvn/version "1.6.2"}
            pro.juxt.crux/crux-core                   {:mvn/version "1.18.0"}
-           pro.juxt.crux/crux-rocksdb                {:mvn/version "1.18.0"}}
+           pro.juxt.crux/crux-rocksdb                {:mvn/version "1.18.0"}
+           metosin/spec-tools                        {:mvn/version "0.10.5"}
+           com.googlecode.owasp-java-html-sanitizer/owasp-java-html-sanitizer
+           {:mvn/version "20200713.1"}}
  :aliases {:build {:replace-paths ["build"]
                    :extra-deps    {io.github.clojure/tools.build {:git/tag "v0.1.7" :git/sha "8a3abc2"}}
                    :ns-default    build}}}

@@ -5,8 +5,8 @@
 (s/def :crux.db/id uuid?)
 
 (s/def :ingredient/name string?)
-(s/def :ingredient/unit #{:ml :dl :l :g :kg :ts :ss :clove})
-(s/def :ingredient/amount double?)
+(s/def :ingredient/unit #{:ml :dl :l :g :kg :tsp :tbsp :clove})
+(s/def :ingredient/amount number?)
 (s/def :ingredient/ingredient (s/and (s/keys :req [:ingredient/name]
                                              :opt [:ingredient/unit
                                                    :ingredient/amount])
@@ -22,6 +22,7 @@
 
 (s/def :recipe/recipe-new (s/keys :req [:recipe/name]
                                   :opt [:recipe/description
+                                        :recipe/directions
                                         :recipe/portions
                                         :recipe/ingredients
                                         :recipe/updated-inst

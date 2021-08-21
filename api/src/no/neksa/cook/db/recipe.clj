@@ -43,7 +43,7 @@
          '{:find     [(pull id [*]) updated-inst]
            :where    [[id :recipe/name]
                       [id :recipe/updated-inst updated-inst]]
-           :order-by [[updated-inst :asc]]})))
+           :order-by [[updated-inst :desc]]})))
 
 (defn search-recipes-by-name [query]
   (map first

@@ -4,8 +4,14 @@
    [compojure.core :refer :all]
    [compojure.route :as route]
    [clojure.spec.alpha :as s]
-   [no.neksa.cook.spec.util :as su]
-   [no.neksa.cook.db.recipe :as db]))
+   [spec-tools.core :as st]
+   [no.neksa.cook.db.recipe :as db])
+  (:import
+   [org.owasp.html Sanitizers]))
+
+(def ^:private html-policy (.and
+                             Sanitizers/FORMATTING
+                             Sanitizers/BLOCKS))
 
 (defn- edn-response [body]
   (-> body
@@ -14,20 +20,24 @@
       (content-type "application/edn")))
 
 (defn- create-recipe [{recipe :edn-params}]
-  (if (su/valid-closed? :recipe/recipe-new recipe)
-    (-> recipe
-        db/create-recipe
-        deref
-        edn-response)
-    (bad-request (s/explain-str :recipe/recipe recipe))))
+  (let [recipe (st/select-spec :recipe/recipe-new recipe)]
+    (if (s/valid? :recipe/recipe-new recipe)
+      (-> recipe
+          (update :recipe/directions #(.sanitize html-policy %))
+          db/create-recipe
+          deref
+          edn-response)
+      (bad-request (s/explain-str :recipe/recipe-new recipe)))))
 
 (defn- edit-recipe [{recipe :edn-params}]
-  (if (su/valid-closed? :recipe/recipe recipe)
-    (-> recipe
-        db/edit-recipe
-        deref
-        edn-response)
-    (bad-request (s/explain-str :recipe/recipe recipe))))
+  (let [recipe (st/select-spec :recipe/recipe recipe)]
+    (if (or true(s/valid? :recipe/recipe recipe))
+      (-> recipe
+          (update :recipe/directions #(.sanitize html-policy %))
+          db/edit-recipe
+          deref
+          edn-response)
+      (bad-request (s/explain-str :recipe/recipe recipe)))))
 
 (defn- get-recipe [{{id :id} :route-params}]
   (-> id
