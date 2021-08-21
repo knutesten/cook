@@ -108,7 +108,8 @@
   [:<>
    [:label "Ingredienser"]
    [:ul
-    (let [ingredients (:recipe/ingredients @recipe)]
+    (let [ingredients (:recipe/ingredients @recipe)
+          ingredients (if (empty? ingredients) [{}] ingredients)]
       (for [[idx ing] (zipmap (range) ingredients)]
         ^{:key idx}
         [:li
