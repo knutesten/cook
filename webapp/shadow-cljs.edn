@@ -11,4 +11,5 @@
  {:frontend
   {:target   :browser
    :devtools {:after-load no.neksa.cook.core/mount-root}
-   :modules  {:main {:init-fn no.neksa.cook.core/init!}}}}}
+   :modules  {:main {:init-fn no.neksa.cook.core/init!}}
+   :release  {:compiler-options {:optimizations :advanced}}}}}
