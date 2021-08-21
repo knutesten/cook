@@ -9,7 +9,7 @@
             :on-change #(let [nr-str (-> % .-target .-value)
                               nr     (js/parseInt nr-str)]
                           (cond
-                            (empty? nr-str)           (swap! data assoc key nil)
+                            (empty? nr-str)           (swap! data dissoc key)
                             (and (int? nr) (pos? nr)) (swap! data assoc key nr)))}]])
 
 (defn input-text-with-label [data key label]

@@ -29,9 +29,16 @@
        {:response-format (edn-response-format)
         :handler         #(reset! recipe %)}))
 
+(defn remove-incomplete-ingredients [ingredients]
+  (vec
+    (filter
+      (fn [{:ingredient/keys [unit name amount]}]
+        (and name (or amount (and unit amount))))
+      ingredients)))
+
 (defn save-recipe [evt]
   (.preventDefault evt)
-  (PUT "/recipes" {:params  @recipe
+  (PUT "/recipes" {:params  (update @recipe :recipe/ingredients remove-incomplete-ingredients)
                    :format  (edn-request-format)
                    :handler #(rfe/push-state
                                :recipe
