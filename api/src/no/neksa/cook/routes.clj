@@ -1,6 +1,6 @@
 (ns no.neksa.cook.routes
   (:require
-   [ring.util.response :refer [response content-type bad-request]]
+   [ring.util.response :refer [response status content-type bad-request]]
    [compojure.core :refer :all]
    [compojure.route :as route]
    [clojure.spec.alpha :as s]
@@ -13,11 +13,12 @@
                              Sanitizers/FORMATTING
                              Sanitizers/BLOCKS))
 
-(defn- edn-response [body]
+(defn- edn-response [body & {:keys [status-code] :or {status-code 200}}]
   (-> body
       prn-str
       response
-      (content-type "application/edn")))
+      (content-type "application/edn")
+      (status status-code)))
 
 (defn- create-recipe [{recipe :edn-params}]
   (let [recipe (st/select-spec :recipe/recipe-new recipe)]
@@ -27,17 +28,19 @@
           db/create-recipe
           deref
           edn-response)
-      (bad-request (s/explain-str :recipe/recipe-new recipe)))))
+      (edn-response (s/explain-data :recipe/recipe-new recipe)
+                    :status-code 400))))
 
 (defn- edit-recipe [{recipe :edn-params}]
   (let [recipe (st/select-spec :recipe/recipe recipe)]
-    (if (or true(s/valid? :recipe/recipe recipe))
+    (if (s/valid? :recipe/recipe recipe)
       (-> recipe
           (update :recipe/directions #(.sanitize html-policy %))
           db/edit-recipe
           deref
           edn-response)
-      (bad-request (s/explain-str :recipe/recipe recipe)))))
+      (edn-response (s/explain-data :recipe/recipe recipe)
+                    :status-code 400))))
 
 (defn- get-recipe [{{id :id} :route-params}]
   (-> id
