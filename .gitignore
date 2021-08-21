@@ -6,3 +6,4 @@ data/
 webapp/public/js
 node_modules/
 .shadow-cljs/
+dist/

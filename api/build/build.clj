@@ -1,5 +1,7 @@
 (ns build
-  (:require [clojure.tools.build.api :as b]))
+  (:require
+   [clojure.tools.reader]
+   [clojure.tools.build.api :as b]))
 
 (def lib 'no.neksa/cook)
 (def version (format "%s" (b/git-count-revs nil)))
