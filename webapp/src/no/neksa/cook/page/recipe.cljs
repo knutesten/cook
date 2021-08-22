@@ -29,6 +29,16 @@
        {:response-format (edn-response-format)
         :handler         #(reset! recipe %)}))
 
+(defn wrap-fetch-recipe [f]
+  (letfn [(get-id [this] (-> this r/props :parameters :path :id))]
+    (r/create-class
+      {:component-did-mount    (fn [this] (fetch-recipe (get-id this)))
+       :component-will-unmount (fn [this] (reset! recipe nil))
+       :component-did-update   (fn [this] (when-not (= (get-id this)
+                                                       (:crux.db/id @recipe))
+                                            (fetch-recipe (get-id this))))
+       :reagent-render         f})))
+
 (defn remove-incomplete-ingredients [ingredients]
   (vec
     (filter
@@ -135,47 +145,47 @@
             "+"])
          ]))]])
 
-(defn edit-recipe-page [{{{id :id} :path} :parameters}]
-  (r/with-let [_ (fetch-recipe id)]
-    (when @recipe
-      [:form
-       [:h1 "Endrer på " (:recipe/name @recipe)]
-       [input-text-with-label recipe :recipe/name "Navn"]
-       [textarea-with-label recipe :recipe/description "Beskrivelse"]
-       [input-int-with-label recipe :recipe/portions "Porsjoner"]
-       [input-ingredients]
-       [:label "Framangsmåte"]
-       [:> ReactQuill
-        {:theme     "snow"
-         :value     (:recipe/directions @recipe)
-         :on-change #(swap! recipe assoc :recipe/directions %)}]
-       [:br]
-       [:button {:on-click #(rfe/push-state :recipe {:id id})} "Avbryt"]
-       (gstring/unescapeEntities "&nbsp;")
-       [:button {:type     "submit"
-                 :on-click save-recipe} "Lagre"]])
-    (finally (reset! recipe nil))))
+(defn edit-recipe-page [_]
+  (wrap-fetch-recipe
+    (fn [{{{id :id} :path} :parameters}]
+      (when @recipe
+        [:form
+         [:h1 "Endrer på " (:recipe/name @recipe)]
+         [input-text-with-label recipe :recipe/name "Navn"]
+         [textarea-with-label recipe :recipe/description "Beskrivelse"]
+         [input-int-with-label recipe :recipe/portions "Porsjoner"]
+         [input-ingredients]
+         [:label "Framangsmåte"]
+         [:> ReactQuill
+          {:theme     "snow"
+           :value     (:recipe/directions @recipe)
+           :on-change #(swap! recipe assoc :recipe/directions %)}]
+         [:br]
+         [:button {:on-click #(rfe/push-state :recipe {:id id})} "Avbryt"]
+         (gstring/unescapeEntities "&nbsp;")
+         [:button {:type     "submit"
+                   :on-click save-recipe} "Lagre"]]))))
 
-(defn recipe-page [{{{id :id} :path} :parameters}]
-  (r/with-let [_ (fetch-recipe id)]
-    (when @recipe
-      [:<>
-       [:h1 (:recipe/name @recipe)]
-       [:blockquote (:recipe/description @recipe)]
-       [:div
-        [:h3 "Ingredienser"]
-        [:h6 "Porsjoner: " (:recipe/portions @recipe)]
-        [:ul
-         (for [[idx ing] (zipmap (range) (:recipe/ingredients @recipe))
-               :let      [amount (:ingredient/amount ing)
-                          unit (:ingredient/unit ing)
-                          name (:ingredient/name ing)]]
-           ^{:key idx}
-           [:li amount " " unit " " name])]
-        [:div
-         [:h3 "Framgangsmåte"]
-         [:p {:dangerouslySetInnerHTML {:__html (:recipe/directions @recipe)}}]]]
-       [:a {:href (rfe/href :edit-recipe {:id id})}
-        "Endre på oppskrift"]])
-    (finally (reset! recipe nil))))
+(defn recipe-page [_]
+  (wrap-fetch-recipe
+    (fn [{{{id :id} :path} :parameters}]
+      (when @recipe
+        [:<>
+         [:h1 (:recipe/name @recipe)]
+         [:blockquote (:recipe/description @recipe)]
+         [:div
+          [:h3 "Ingredienser"]
+          [:h6 "Porsjoner: " (:recipe/portions @recipe)]
+          [:ul
+           (for [[idx ing] (zipmap (range) (:recipe/ingredients @recipe))
+                 :let      [amount (:ingredient/amount ing)
+                            unit (:ingredient/unit ing)
+                            name (:ingredient/name ing)]]
+             ^{:key idx}
+             [:li amount " " unit " " name])]
+          [:div
+           [:h3 "Framgangsmåte"]
+           [:p {:dangerouslySetInnerHTML {:__html (:recipe/directions @recipe)}}]]]
+         [:a {:href (rfe/href :edit-recipe {:id id})}
+          "Endre på oppskrift"]]))))
 
