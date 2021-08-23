@@ -11,6 +11,9 @@
                                     input-text-with-label
                                     textarea-with-label]]))
 
+(def units
+  {:ml "ml" :dl "dl" :l "l" :g "g" :kg "kg" :tsp "ts" :tbsp "ss" :clove "fedd"})
+
 (defonce recipe (r/atom nil))
 
 (defn update-recipe! [& vals]
@@ -34,8 +37,9 @@
     (r/create-class
       {:component-did-mount    (fn [this] (fetch-recipe (get-id this)))
        :component-will-unmount (fn [this] (reset! recipe nil))
-       :component-did-update   (fn [this] (when-not (= (get-id this)
-                                                       (:crux.db/id @recipe))
+       :component-did-update   (fn [this] (when-not
+                                              (= (get-id this)
+                                                 (str (:crux.db/id @recipe)))
                                             (fetch-recipe (get-id this))))
        :reagent-render         f})))
 
@@ -61,8 +65,7 @@
                [:recipe/ingredients idx :ingredient/unit]
                (-> % .-target .-value keyword))}
    [:option {:value ""}]
-   (for [[u t] [[:ml "ml"] [:dl "dl"] [:l "l"] [:g "g"] [:kg "kg"]
-                [:tsp "ts"] [:tbsp "ss"] [:clove "fedd"]]]
+   (for [[u t] units]
      ^{:key u}
      [:option {:value (name u)} t])])
 
@@ -81,6 +84,7 @@
 
 (defn input-float [idx ing]
   [:input {:type      "text"
+           :style     {:width "55px"}
            :on-change (input-float-handler idx ing)
            :value     (or
                         (:ingredient/amount__format ing)
@@ -138,12 +142,11 @@
          (gstring/unescapeEntities "&nbsp;")
          [:button {:on-click
                    #(update-recipe! :recipe/ingredients vec-del idx)} "-"]
-         (gstring/unescapeEntities "&nbsp;")
-         (when (= (inc idx) (count ingredients))
-           [:button
-            {:on-click #(update-recipe! :recipe/ingredients (fnil conj []) {})}
-            "+"])
-         ]))]])
+         (gstring/unescapeEntities "&nbsp;")]))
+    [:li
+     [:button
+      {:on-click #(update-recipe! :recipe/ingredients (fnil conj []) {})}
+      "+"]]]])
 
 (defn edit-recipe-page [_]
   (wrap-fetch-recipe
@@ -182,7 +185,7 @@
                             unit (:ingredient/unit ing)
                             name (:ingredient/name ing)]]
              ^{:key idx}
-             [:li amount " " unit " " name])]
+             [:li amount " " (unit units) " " name])]
           [:div
            [:h3 "Framgangsmåte"]
            [:p {:dangerouslySetInnerHTML {:__html (:recipe/directions @recipe)}}]]]
