@@ -7,6 +7,7 @@
    [ajax.edn :refer [edn-response-format edn-request-format]]
    [reitit.frontend.easy :as rfe]
    [reagent.core :as r]
+   [reagent.ratom :as ra]
    [no.neksa.cook.form-util :refer [input-int-with-label
                                     input-text-with-label
                                     textarea-with-label]]))
@@ -168,26 +169,43 @@
          [:button {:type     "submit"
                    :on-click save-recipe} "Lagre"]]))))
 
+(def factor (ra/reaction (/ (or (:recipe/portions__selected @recipe)
+                                (:recipe/portions @recipe))
+                            (:recipe/portions @recipe))))
+
 (defn recipe-page [_]
   (wrap-fetch-recipe
     (fn [{{{id :id} :path} :parameters}]
       (when @recipe
         [:<>
          [:h1 (:recipe/name @recipe)]
-         [:blockquote (:recipe/description @recipe)]
+         (when-let [desc (:recipe/description @recipe)]
+           [:blockquote desc])
          [:div
           [:h3 "Ingredienser"]
-          [:h6 "Porsjoner: " (:recipe/portions @recipe)]
+          [:h6 "Porsjoner: "
+           [:input {:type      "text"
+                    :style     {:width "45px"}
+                    :on-change #(swap!
+                                  recipe
+                                  assoc
+                                  :recipe/portions__selected
+                                  (.. % -target -value))
+                    :value     (or
+                                 (:recipe/portions__selected @recipe)
+                                 (:recipe/portions @recipe))}]]
           [:ul
-           (for [[idx ing] (zipmap (range) (:recipe/ingredients @recipe))
-                 :let      [amount (:ingredient/amount ing)
-                            unit (:ingredient/unit ing)
-                            name (:ingredient/name ing)]]
-             ^{:key idx}
-             [:li amount " " (units unit) " " name])]
+           (let [fac @factor]
+             (for [[idx ing] (zipmap (range) (:recipe/ingredients @recipe))
+                   :let      [amount (:ingredient/amount ing)
+                              unit (:ingredient/unit ing)
+                              name (:ingredient/name ing)]]
+               ^{:key idx}
+               [:li (* fac amount) " " (units unit) " " name]))]
           [:div
            [:h3 "Framgangsmåte"]
-           [:p {:dangerouslySetInnerHTML {:__html (:recipe/directions @recipe)}}]]]
+           [:p {:dangerouslySetInnerHTML
+                {:__html (:recipe/directions @recipe)}}]]]
          [:a {:href (rfe/href :edit-recipe {:id id})}
           "Endre på oppskrift"]]))))
 
