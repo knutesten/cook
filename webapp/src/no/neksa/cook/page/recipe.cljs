@@ -122,8 +122,7 @@
   [:<>
    [:label "Ingredienser"]
    [:ul
-    (let [ingredients (:recipe/ingredients @recipe)
-          ingredients (if (empty? ingredients) [{}] ingredients)]
+    (let [ingredients (:recipe/ingredients @recipe)]
       (for [[idx ing] (zipmap (range) ingredients)]
         ^{:key idx}
         [:li
@@ -185,7 +184,7 @@
                             unit (:ingredient/unit ing)
                             name (:ingredient/name ing)]]
              ^{:key idx}
-             [:li amount " " (unit units) " " name])]
+             [:li amount " " (units unit) " " name])]
           [:div
            [:h3 "Framgangsmåte"]
            [:p {:dangerouslySetInnerHTML {:__html (:recipe/directions @recipe)}}]]]
