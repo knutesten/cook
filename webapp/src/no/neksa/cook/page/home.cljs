@@ -1,12 +1,12 @@
 (ns no.neksa.cook.page.home
   (:require
    [goog.string :as gstring]
-   [ajax.core :refer [GET POST]]
-   [ajax.edn :refer [edn-response-format edn-request-format]]
+   [clojure.string :as str]
+   [no.neksa.cook.store :refer [emit state]]
    [reitit.frontend.easy :as rfe]
    [reagent.core :as r]))
 
-(defonce state (r/atom {:recipes []}))
+(def recipes (r/cursor state [:recipes]))
 
 (defn- recipe-list [recipes]
   [:ul
@@ -17,31 +17,20 @@
      ^{:key id}
      [:li [:a {:href href} recipe-name]])])
 
-(defn fetch-recipes []
-  (GET "/recipes"
-       {:response-format (edn-response-format)
-        :handler         #(swap! state assoc :recipes %)}))
-
-(defn create-recipe-handler [evt]
-  (.preventDefault evt)
-  (POST "/recipes" {:params  {:recipe/name (:new-recipe-name @state)}
-                    :format  (edn-request-format)
-                    :handler (fn [_]
-                               (swap! state dissoc :new-recipe-name)
-                               (fetch-recipes))}))
-
 (defn home-page [_]
-  (fetch-recipes)
+  (emit :fetch-recipes)
   (fn []
-    (let [{:keys [new-recipe-name recipes]} @state]
+    (r/with-let [new-name (r/atom "")]
       [:<>
        [:h1 "Det gule husets oppskrifter"]
-       [:form {:on-submit create-recipe-handler}
+       [:form {:on-submit #(do (.preventDefault %)
+                               (emit :create-new-recipe @new-name)
+                               (reset! new-name ""))}
         [:input {:type      "text"
-                 :value     new-recipe-name
-                 :on-change #(swap! state assoc :new-recipe-name (-> % .-target .-value))}]
+                 :value     @new-name
+                 :on-change #(reset! new-name (-> % .-target .-value))}]
         (gstring/unescapeEntities "&nbsp;")
         [:button {:type     "submit"
-                  :disabled (not new-recipe-name)} "Lag ny"]]
-       (recipe-list recipes)])))
+                  :disabled (str/blank? @new-name)} "Lag ny"]]
+       (recipe-list @recipes)])))
 
