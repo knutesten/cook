@@ -66,6 +66,24 @@
       (and (int? nr) (pos? nr))
       (swap! state assoc-in [:recipe :recipe/portions] nr))))
 
+(defmethod emit :set-recipe-prep-time [_ nr-str]
+  (let [nr (js/parseInt nr-str)]
+    (cond
+      (empty? nr-str)
+      (swap! state update :recipe dissoc :recipe/prep-time)
+
+      (and (int? nr) (pos? nr))
+      (swap! state assoc-in [:recipe :recipe/prep-time] nr))))
+
+(defmethod emit :set-recipe-cook-time [_ nr-str]
+  (let [nr (js/parseInt nr-str)]
+    (cond
+      (empty? nr-str)
+      (swap! state update :recipe dissoc :recipe/cook-time)
+
+      (and (int? nr) (pos? nr))
+      (swap! state assoc-in [:recipe :recipe/cook-time] nr))))
+
 (defmethod emit :set-ingredient-name [_ idx name]
   (swap! recipe assoc-in [:recipe/ingredients idx :ingredient/name] name))
 

@@ -13,9 +13,13 @@
    (for [recipe recipes
          :let   [id (:crux.db/id recipe)
                  href (rfe/href :recipe {:id id})
-                 recipe-name (:recipe/name recipe)]]
+                 recipe-name (:recipe/name recipe)
+                 total-time (+ (:recipe/prep-time recipe)
+                               (:recipe/cook-time recipe))]]
      ^{:key id}
-     [:li [:a {:href href} recipe-name]])])
+     [:li [:a {:href href} recipe-name
+           (when-not (zero? total-time)
+             (str " (" total-time " min)"))]])])
 
 (defn home-page [_]
   (emit :fetch-recipes)

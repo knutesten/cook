@@ -21,6 +21,20 @@
         ^{:key idx}
         [:li (* factor amount) " " (units unit) " " name]))]])
 
+(defn- cook-time []
+  (let [prep-time (:recipe/prep-time @recipe)
+        cook-time (:recipe/cook-time @recipe)]
+    [:div
+     (when prep-time
+       [:span "Forberedelser: " prep-time " min"])
+     (when (and prep-time cook-time)
+       [:span " | "])
+     (when cook-time
+       [:span "Koketid: " cook-time " min"])
+     (when (and prep-time cook-time)
+       [:div
+        [:b "Total tid: " (+ prep-time cook-time) " min"]])]))
+
 (defn recipe-page [{{{id :id} :path} :parameters}]
   (emit :fetch-recipe id)
   (fn []
@@ -29,6 +43,7 @@
        [:h1 (:recipe/name @recipe)]
        (when-let [desc (:recipe/description @recipe)]
          [:blockquote desc])
+       [cook-time]
        [ingredients]
        [:div
         [:h3 "Framgangsmåte"]

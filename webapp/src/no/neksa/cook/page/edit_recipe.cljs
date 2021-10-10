@@ -20,6 +20,18 @@
    "Porsjoner"
    #(emit :set-recipe-portions %)])
 
+(defn- prep-time-input []
+  [input-text-with-label
+   (:recipe/prep-time @recipe)
+   "Forberedelsestid"
+   #(emit :set-recipe-prep-time %)])
+
+(defn- cook-time-input []
+  [input-text-with-label
+   (:recipe/cook-time @recipe)
+   "Koketid"
+   #(emit :set-recipe-cook-time %)])
+
 (defn- description-textarea []
   [textarea-with-label
    (:recipe/description @recipe)
@@ -74,6 +86,8 @@
        [:h1 "Endrer på " (:recipe/name @recipe)]
        [name-input]
        [description-textarea]
+       [prep-time-input]
+       [cook-time-input]
        [portions-input]
        [ingredients-input]
        [:label "Framangsmåte"]

@@ -17,11 +17,15 @@
 (s/def :recipe/name string?)
 (s/def :recipe/description string?)
 (s/def :recipe/portions integer?)
+(s/def :recipe/prep-time integer?)
+(s/def :recipe/cook-time integer?)
 (s/def :recipe/directions string?)
 (s/def :recipe/ingredients (s/coll-of :ingredient/ingredient :kind vector? :into []))
 
 (s/def :recipe/recipe-new (s/keys :req [:recipe/name]
                                   :opt [:recipe/description
+                                        :recipe/prep-time
+                                        :recipe/cook-time
                                         :recipe/directions
                                         :recipe/portions
                                         :recipe/ingredients
