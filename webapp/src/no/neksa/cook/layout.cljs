@@ -1,7 +1,8 @@
 (ns no.neksa.cook.layout
   (:require
    [reitit.frontend.easy :as rfe]
-   [no.neksa.cook.routes :refer [routes route]]))
+   [no.neksa.cook.store :refer [state]]
+   [no.neksa.cook.routes :refer [routes]]))
 
 (defn nav-link [route-name link-text current-route]
   [:a {:href (rfe/href route-name)}
@@ -21,7 +22,7 @@
        [nav-link route-name link-text current-route]))])
 
 (defn layout-page []
-  (let [current-route @route
+  (let [current-route (-> @state :route)
         view          (-> current-route :data :view)]
     (when view
       [:<>

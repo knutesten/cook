@@ -1,28 +1,17 @@
 (ns no.neksa.cook.form-util)
 
-(defn input-int-with-label [data key label]
+(defn input-text-with-label [value label on-change]
   [:label
    label
    [:br]
    [:input {:type      "text"
-            :value     (key  @data)
-            :on-change #(let [nr-str (-> % .-target .-value)
-                              nr     (js/parseInt nr-str)]
-                          (cond
-                            (empty? nr-str)           (swap! data dissoc key)
-                            (and (int? nr) (pos? nr)) (swap! data assoc key nr)))}]])
+            :value     value
+            :on-change #(on-change (.. % -target -value))}]])
 
-(defn input-text-with-label [data key label]
+(defn textarea-with-label [value label on-change]
   [:label
    label
    [:br]
-   [:input {:type      "text"
-            :value     (key  @data)
-            :on-change #(swap! data assoc key (-> % .-target .-value))}]])
+   [:textarea {:on-change #(on-change (.. % -target -value))
+               :value     value}]])
 
-(defn textarea-with-label [data key label]
-  [:label
-   label
-   [:br]
-   [:textarea {:on-change #(swap! data assoc key (-> % .-target .-value))
-               :value     (key  @data)}]])
